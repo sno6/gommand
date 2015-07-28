@@ -11,6 +11,22 @@ import(
 	"golang.org/x/tools/imports"
 )
 
+const code_tmpl = `
+package main
+
+import(
+	"fmt"
+)
+
+func p(args ...interface{}) {
+	fmt.Println(args...)
+}
+
+func main() {
+	%v
+}
+`
+
 func run(name string) (string, error) {
 	out, err := exec.Command("go", "run", name).CombinedOutput()
 	if err != nil {
@@ -73,7 +89,7 @@ func main() {
 	}()
 
 	code := os.Args[1]
-	bp := fmt.Sprintf("package main\nfunc main() {\n\t%v\n}", code)
+	bp := fmt.Sprintf(code_tmpl, code)
 
 	if err = ioutil.WriteFile(file.Name(), []byte(bp), 0644); err != nil {
 		log.Printf("main: error writing code to temp file: %v\n", err)

@@ -7,6 +7,7 @@ import(
 	"fmt"
 	"log"
 	"strings"
+	"go/build"
 
 	"golang.org/x/tools/imports"
 )
@@ -14,13 +15,13 @@ import(
 const code_tmpl = `
 package main
 
-import(
-	"fmt"
-)
+%s
 
 func p(args ...interface{}) {
 	fmt.Println(args...)
 }
+
+%s
 
 func main() {
 	%v
@@ -89,7 +90,19 @@ func main() {
 	}()
 
 	code := os.Args[1]
-	bp := fmt.Sprintf(code_tmpl, code)
+	// check github.com/k0kubun/pp is installed
+	pp_import, pp_func := "", ""
+	_, err = build.Import("github.com/k0kubun/pp", "", build.FindOnly)
+	if err == nil {
+		pp_import = `import (pp_dumper "github.com/k0kubun/pp")`
+		pp_func = `
+		func pp(args ...interface{}) {
+			pp_dumper.Print(args...)
+		}
+		`
+	}
+
+	bp := fmt.Sprintf(code_tmpl, pp_import, pp_func, code)
 
 	if err = ioutil.WriteFile(file.Name(), []byte(bp), 0644); err != nil {
 		log.Printf("main: error writing code to temp file: %v\n", err)

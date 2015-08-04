@@ -28,8 +28,10 @@ func main() {
 }
 `
 
-func run(name string) (string, error) {
-	out, err := exec.Command("go", "run", name).CombinedOutput()
+func run(name string, args []string) (string, error) {
+	go_args := []string{"run", name}
+	go_args = append(go_args, args...)
+	out, err := exec.Command("go", go_args...).CombinedOutput()
 	if err != nil {
 		return "", err
 	}
@@ -112,7 +114,7 @@ func main() {
 		log.Printf("main: error editing imports: %v\n", err)
 	}
 
-	out, err := run(file.Name())
+	out, err := run(file.Name(), os.Args[2:])
 	if err != nil {
 		fmt.Println("There was an error in your go code.")
 	}

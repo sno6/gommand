@@ -1,11 +1,11 @@
 package main
 
-import(
+import (
+	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
-	"io/ioutil"
-	"fmt"
-	"log"
 	"strings"
 	"go/build"
 
@@ -32,9 +32,6 @@ func run(name string, args []string) (string, error) {
 	go_args := []string{"run", name}
 	go_args = append(go_args, args...)
 	out, err := exec.Command("go", go_args...).CombinedOutput()
-	if err != nil {
-		return "", err
-	}
 	return string(out), err
 }
 
@@ -46,7 +43,7 @@ func tempFile() (*os.File, error) {
 	}
 
 	// Add the .go suffix to the temp file.
-	if err = os.Rename(file.Name(), file.Name() + ".go"); err != nil {
+	if err = os.Rename(file.Name(), file.Name()+".go"); err != nil {
 		return nil, err
 	}
 	return os.Open(file.Name() + ".go")
@@ -59,7 +56,7 @@ func editImports(file *os.File) error {
 		return err
 	}
 
-	// res holds the go file re-written with imports added. 
+	// res holds the go file re-written with imports added.
 	opt := &imports.Options{}
 	res, err := imports.Process(file.Name(), data, opt)
 	if err != nil {
@@ -104,6 +101,7 @@ func main() {
 		`
 	}
 
+	// bp holds the go boiler plate code and the added user input.
 	bp := fmt.Sprintf(code_tmpl, pp_import, pp_func, code)
 
 	if err = ioutil.WriteFile(file.Name(), []byte(bp), 0644); err != nil {
@@ -111,15 +109,14 @@ func main() {
 	}
 
 	if err = editImports(file); err != nil {
-		log.Printf("main: error editing imports: %v\n", err)
+		fmt.Printf("main: error editing imports: %v\n", err)
+		return
 	}
 
 	out, err := run(file.Name(), os.Args[2:])
 	if err != nil {
-		fmt.Println("There was an error in your go code.")
+		fmt.Println(out)
+		return
 	}
-
-	if out != "" {
-		fmt.Println(strings.TrimSpace(out))
-	}
+	fmt.Println(strings.TrimSpace(out))
 }

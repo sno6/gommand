@@ -87,6 +87,5 @@ func main() {
 		fmt.Println(out)
 		return
 	}
-
 	fmt.Println(strings.TrimSpace(out))
 }

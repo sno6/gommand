@@ -1,8 +1,34 @@
-# gommand
+gommand
+=======
+
 Go one liner program, similar to python -c
 
-<strong>Usage</strong>
-<ul>
-       <li>gommand 'fmt.Println("Hello, Gommand!")' <br /></li>
-       <li>gommand 'h := md5.New(); io.WriteString(h, "Md5 me"); fmt.Printf("%x", h.Sum(nil))'</li>
-</ul>
+How to get it?
+-------------
+```bash
+go get github.com/sno6/gommand
+```
+
+How to run it?
+-------------
+```bash
+gommand [code]
+```
+
+Usage
+-----
+```bash
+gommand 'fmt.Println("Hello, World!")'
+```
+You can quickly write and run code without worrying about setting up a go file.
+gommand auto imports whatever packages are being used by the program so you don't have to worry about it.
+
+Write data to a new file.
+```bash
+gommand 'f, _ := os.Create("file"); f.Write([]byte("hi")); f.Close()'
+```
+
+Run a quick http server on port 8080.
+```bash
+gommand 'http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { fmt.Fprintf(w, "hi") }); http.ListenAndServe(":8080",nil)'
+```

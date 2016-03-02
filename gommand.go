@@ -11,13 +11,16 @@ import (
 	"golang.org/x/tools/imports"
 )
 
-func run(name string) (string, error) {
-	out, err := exec.Command("go", "run", name).CombinedOutput()
+func run(fileName string) (string, error) {
+	out, err := exec.Command("go", "run", fileName).CombinedOutput()
 	return string(out), err
 }
 
 func tempFile() (*os.File, error) {
 	curDir, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
 	file, err := ioutil.TempFile(curDir, "temp")
 	if err != nil {
 		return nil, err
@@ -51,41 +54,49 @@ func editImports(file *os.File) error {
 	return nil
 }
 
+func usage() {
+	fmt.Println("Usage: gommand [code]")
+	fmt.Println("Example: gommand 'name := \"Sno6\"; fmt.Println(name)'")
+	os.Exit(1)
+}
+
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: gommand 'name := \"Sno\"; fmt.Println(name)'")
-		return
+		usage()
 	}
 
 	file, err := tempFile()
 	if err != nil {
-		log.Printf("main: error creating temp file: %v\n", err)
+		log.Fatalf("main: error creating temp file: %v\n", err)
 	}
-	defer file.Close()
-
 	defer func() {
+		file.Close()
+
 		if err = os.Remove(file.Name()); err != nil {
 			log.Printf("main: error removing temp file: %v\n", err)
 		}
 	}()
 
 	code := os.Args[1]
-	// bp holds the go boiler plate code and the added user input.
+	if code == "" {
+		usage()
+	}
+
+	// bp holds the go boiler plate code with user inputted code added.
 	bp := fmt.Sprintf("package main\nfunc main() {\n\t%v\n}", code)
 
+	// Write go code to temp file and add missing imports.
+	// Use Printf over Fatalf so removing of temp file will run through defer.
 	if err = ioutil.WriteFile(file.Name(), []byte(bp), 0644); err != nil {
 		log.Printf("main: error writing code to temp file: %v\n", err)
 	}
-
 	if err = editImports(file); err != nil {
-		fmt.Printf("main: error editing imports: %v\n", err)
-		return
+		log.Printf("main: error editing imports: %v\n", err)
 	}
 
 	out, err := run(file.Name())
 	if err != nil {
-		fmt.Println(out)
-		return
+		log.Printf("main: error running go code query: %v\n", err)
 	}
 	fmt.Println(strings.TrimSpace(out))
 }

@@ -98,5 +98,8 @@ func main() {
 	if err != nil {
 		log.Printf("main: error running go code query: %v\n", err)
 	}
+	if out == "" {
+		return
+	}
 	fmt.Println(strings.TrimSpace(out))
 }

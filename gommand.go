@@ -107,7 +107,7 @@ func main() {
 		import (pp_dumper "github.com/k0kubun/pp")
 
 		func pp(args ...interface{}) {
-			pp_dumper.Print(args...)
+			pp_dumper.Println(args...)
 		}
 		`
 	}

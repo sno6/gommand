@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"go/build"
 	"io/ioutil"
 	"log"
 	"os"
@@ -11,8 +12,24 @@ import (
 	"golang.org/x/tools/imports"
 )
 
-func run(fileName string) (string, error) {
-	out, err := exec.Command("go", "run", fileName).CombinedOutput()
+const codeTmpl = `
+package main
+
+%s
+
+func p(args ...interface{}) {
+	fmt.Println(args...)
+}
+
+func main() {
+	%v
+}
+`
+
+func run(fileName string, args []string) (string, error) {
+	goArgs := []string{"run", fileName}
+	goArgs = append(goArgs, args...)
+	out, err := exec.Command("go", goArgs...).CombinedOutput()
 	return string(out), err
 }
 
@@ -82,8 +99,21 @@ func main() {
 		usage()
 	}
 
+	// check github.com/k0kubun/pp is installed
+	ppCode := ""
+	_, err = build.Import("github.com/k0kubun/pp", "", build.FindOnly)
+	if err == nil {
+		ppCode = `
+		import (pp_dumper "github.com/k0kubun/pp")
+
+		func pp(args ...interface{}) {
+			pp_dumper.Println(args...)
+		}
+		`
+	}
+
 	// bp holds the go boiler plate code with user inputted code added.
-	bp := fmt.Sprintf("package main\nfunc main() {\n\t%v\n}", code)
+	bp := fmt.Sprintf(codeTmpl, ppCode, code)
 
 	// Write go code to temp file and add missing imports.
 	// Use Printf over Fatalf so removing of temp file will run through defer.
@@ -94,7 +124,7 @@ func main() {
 		log.Printf("main: error editing imports: %v\n", err)
 	}
 
-	out, err := run(file.Name())
+	out, err := run(file.Name(), os.Args[2:])
 	if err != nil {
 		log.Printf("main: error running go code query: %v\n", err)
 	}

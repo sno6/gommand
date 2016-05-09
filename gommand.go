@@ -25,6 +25,7 @@ func tempFile() (*os.File, error) {
 	if err != nil {
 		return nil, err
 	}
+	file.Close()
 
 	// Add the .go suffix to the temp file.
 	if err = os.Rename(file.Name(), file.Name()+".go"); err != nil {

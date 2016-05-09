@@ -65,6 +65,10 @@ func main() {
 	if len(os.Args) < 2 {
 		usage()
 	}
+	code := os.Args[1]
+	if code == "" {
+		usage()
+	}
 
 	file, err := tempFile()
 	if err != nil {
@@ -77,11 +81,6 @@ func main() {
 			log.Printf("main: error removing temp file: %v\n", err)
 		}
 	}()
-
-	code := os.Args[1]
-	if code == "" {
-		usage()
-	}
 
 	// bp holds the go boiler plate code with user inputted code added.
 	bp := fmt.Sprintf("package main\nfunc main() {\n\t%v\n}", code)

@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/signal"
 	"strings"
 
 	"golang.org/x/tools/imports"
@@ -62,6 +63,8 @@ func usage() {
 }
 
 func main() {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
 	if len(os.Args) < 2 {
 		usage()
 	}
@@ -71,11 +74,11 @@ func main() {
 	}
 
 	file, err := tempFile()
-	go func(){
-	for sig := range c {
-		fmt.Println("Recieved sig", sig)
-		os.Remove(file.Name())
-	}
+	go func() {
+		for sig := range c {
+			fmt.Println("Recieved sig", sig)
+			os.Remove(file.Name())
+		}
 	}()
 
 	if err != nil {

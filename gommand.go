@@ -36,22 +36,22 @@ func tempFile() (*os.File, error) {
 	return os.Open(file.Name() + ".go")
 }
 
-func editImports(fileName string) error {
+func editImports(file *os.File) error {
 	// Read the code from the temp go file.
-	data, err := ioutil.ReadFile(fileName)
+	data, err := ioutil.ReadFile(file.Name())
 	if err != nil {
 		return err
 	}
 
 	// res holds the go file re-written with imports added.
 	opt := &imports.Options{}
-	res, err := imports.Process(fileName, data, opt)
+	res, err := imports.Process(file.Name(), data, opt)
 	if err != nil {
 		return err
 	}
 
 	// Write the edited file into the original temp file.
-	if err = ioutil.WriteFile(fileName, res, 0644); err != nil {
+	if err = ioutil.WriteFile(file.Name(), res, 0644); err != nil {
 		return err
 	}
 	return nil
@@ -92,9 +92,10 @@ func main() {
 	if err = ioutil.WriteFile(file.Name(), []byte(bp), 0644); err != nil {
 		log.Printf("main: error writing code to temp file: %v\n", err)
 	}
-	if err = editImports(file.Name()); err != nil {
+	if err = editImports(file); err != nil {
 		log.Printf("main: error editing imports: %v\n", err)
 	}
+
 	if err = run(file.Name()); err != nil {
 		log.Printf("main: error running go code query: %v\n", err)
 	}

@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
-	"strings"
 
 	"golang.org/x/tools/imports"
 )

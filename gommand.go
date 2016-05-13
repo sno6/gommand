@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/signal"
 
 	"golang.org/x/tools/imports"
 )
@@ -64,6 +65,8 @@ func usage() {
 }
 
 func main() {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
 	if len(os.Args) < 2 {
 		usage()
 	}
@@ -73,6 +76,13 @@ func main() {
 	}
 
 	file, err := tempFile()
+	go func() {
+		for sig := range c {
+			fmt.Println("Recieved sig", sig)
+			os.Remove(file.Name())
+		}
+	}()
+
 	if err != nil {
 		log.Fatalf("main: error creating temp file: %v\n", err)
 	}

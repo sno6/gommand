@@ -64,9 +64,14 @@ func usage() {
 	os.Exit(1)
 }
 
+func clean(f *os.File) {
+	f.Close()
+	if err := os.Remove(f.Name()); err != nil {
+		log.Printf("main: error removing tempfile: %v\n", err)
+	}
+}
+
 func main() {
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
 	if len(os.Args) < 2 {
 		usage()
 	}
@@ -76,21 +81,20 @@ func main() {
 	}
 
 	file, err := tempFile()
-	go func() {
-		for sig := range c {
-			fmt.Println("Recieved sig", sig)
-			os.Remove(file.Name())
-		}
-	}()
-
 	if err != nil {
 		log.Fatalf("main: error creating temp file: %v\n", err)
 	}
-	file.Close()
-
 	defer func() {
-		if err = os.Remove(file.Name()); err != nil {
-			log.Printf("main: error removing temp file: %v\n", err)
+		clean(file)
+	}()
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+
+	go func() {
+		for range c {
+			clean(file)
+			os.Exit(1)
 		}
 	}()
 

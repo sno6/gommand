@@ -38,7 +38,6 @@ func tempFile() (*os.File, error) {
 }
 
 func editImports(fileName string) error {
-	// Read the code from the temp go file.
 	data, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		return err
@@ -59,9 +58,8 @@ func editImports(fileName string) error {
 }
 
 func usage() {
-	fmt.Println("Usage: gommand [code]")
-	fmt.Println("Example: gommand 'name := \"Sno6\"; fmt.Println(name)'")
-	os.Exit(1)
+	fmt.Fprintln(os.Stderr, "Usage: gommand [code]")
+	os.Exit(2)
 }
 
 func clean(f *os.File) {
@@ -84,21 +82,18 @@ func main() {
 	if err != nil {
 		log.Fatalf("main: error creating temp file: %v\n", err)
 	}
-	defer func() {
-		clean(file)
-	}()
+	defer clean(file)
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 
 	go func() {
-		for range c {
-			clean(file)
-			os.Exit(1)
-		}
+		<-c
+		clean(file)
+		os.Exit(1)
 	}()
 
-	// bp holds the go boiler plate code with user inputted code added.
+	// bp holds the go boiler plate code with user code added.
 	bp := fmt.Sprintf("package main\nfunc main() {\n\t%v\n}", code)
 
 	// Write go code to temp file and add missing imports.

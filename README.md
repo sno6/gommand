@@ -16,9 +16,7 @@ Write any Go code in a single line context, gommand will handle your imports and
 
 You could also quickly serve your current directory in one line.
  
-```
-gommand 'http.Handle("/", http.FileServer(http.Dir("."))); fmt.Println(http.ListenAndServe(":8080", nil))'
-```
+```gommand 'http.Handle("/", http.FileServer(http.Dir("."))); fmt.Println(http.ListenAndServe(":8080", nil))'```
 
 Quickly find the date.
 

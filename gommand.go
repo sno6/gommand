@@ -49,12 +49,7 @@ func editImports(fileName string) error {
 	if err != nil {
 		return err
 	}
-
-	// Write the edited file into the original temp file.
-	if err = ioutil.WriteFile(fileName, res, 0644); err != nil {
-		return err
-	}
-	return nil
+	return ioutil.WriteFile(fileName, res, 0644)
 }
 
 func usage() {

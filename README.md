@@ -5,7 +5,7 @@ Go one liner program similar to python -c
 ## How can I get it?
 
 ```
-go get github.com/sno6/gommand
+go install github.com/sno6/gommand@latest
 ```
 
 ## Examples 

@@ -1,5 +1,10 @@
 module github.com/sno6/gommand
 
-go 1.12
+go 1.19
 
-require golang.org/x/tools v0.0.0-20190501045030-23463209683d
+require golang.org/x/tools v0.5.0
+
+require (
+	golang.org/x/mod v0.7.0 // indirect
+	golang.org/x/sys v0.4.0 // indirect
+)
